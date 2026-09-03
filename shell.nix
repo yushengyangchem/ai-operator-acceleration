@@ -1,14 +1,32 @@
 {
-  pkgs ? import <nixpkgs> { },
+  pkgs ? import <nixpkgs> {
+    config = {
+      allowUnfree = true;
+      cudaForwardCompat = false;
+      cudaCapabilities = [ "6.1" ];
+    };
+  },
+  enableCuda ? false,
 }:
 
-pkgs.mkShell {
-  packages = with pkgs; [
+let
+  cuda = pkgs.cudaPackages;
+
+  commonPackages = with pkgs; [
     cmake
+    just
+    perf
     nixfmt
     prettier
     shfmt
-    perf
-    just
   ];
+
+  cudaPackages = with cuda; [
+    cuda_nvcc
+    cuda_cudart
+  ];
+in
+
+pkgs.mkShell {
+  packages = commonPackages ++ pkgs.lib.optionals enableCuda cudaPackages;
 }
