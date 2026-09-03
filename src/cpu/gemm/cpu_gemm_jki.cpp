@@ -22,12 +22,13 @@ void gemm_jki(const Matrix &A, const Matrix &B, Matrix &C, int N) {
 }
 
 int main(int argc, char **argv) {
-  int N = 1024;
+  const auto matrix_size = parse_matrix_size(argc, argv);
 
-  if (!parse_matrix_size(argc, argv, N)) {
+  if (!matrix_size) {
     return EXIT_FAILURE;
   }
 
+  const int N = *matrix_size;
   const auto element_count = matrix_element_count(N);
   Matrix A(element_count);
   Matrix B(element_count);
