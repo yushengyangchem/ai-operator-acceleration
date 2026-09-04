@@ -8,7 +8,7 @@ foreach(loop_order IN LISTS GEMM_LOOP_ORDERS)
     cpu_gemm_${loop_order}.cpp
     gemm_benchmark.hpp
   )
-  target_compile_features(${target_name} PRIVATE cxx_std_17)
+  target_compile_features(${target_name} PRIVATE cxx_std_23)
 
   if(MSVC)
     target_compile_options(${target_name} PRIVATE /W4)

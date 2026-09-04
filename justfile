@@ -6,9 +6,13 @@ loop_orders := "ijk ikj jik jki kij kji"
 default:
     @just --list
 
-# Configure and compile all GEMM implementations in Release mode.
-build:
+# Configure the CMake build directory and refresh the clangd compile-database link.
+configure:
     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+    ln -sfn build/compile_commands.json compile_commands.json
+
+# Configure and compile all GEMM implementations in Release mode.
+build: configure
     cmake --build build --parallel
 
 # Remove compiled artifacts while keeping the CMake configuration.
@@ -17,7 +21,8 @@ clean:
 
 # Remove the complete CMake build directory, including its configuration cache.
 distclean:
-    cmake -E remove_directory build
+    @if [[ -d build ]]; then cmake -E remove_directory build; fi
+    rm -f compile_commands.json
 
 # Build and run the smoke tests.
 test: build

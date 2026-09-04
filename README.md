@@ -4,7 +4,7 @@ A hands-on project for learning AI operator optimization from first principles.
 
 ## Requirements
 
-- A C++17-compatible compiler
+- A C++23-compatible compiler
 - CMake 3.16 or newer
 
 The included `shell.nix` provides the required development tools. Enter the
