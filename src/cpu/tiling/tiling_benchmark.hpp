@@ -4,7 +4,6 @@
 #include <array>
 #include <charconv>
 #include <chrono>
-#include <cmath>
 #include <cstdlib>
 #include <expected>
 #include <format>
