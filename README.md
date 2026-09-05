@@ -51,6 +51,16 @@ Compare cache references and cache misses for the IJK and IKJ implementations:
 just perf 1024 5
 ```
 
+Run the blocked (tiled) GEMM with one block size, sweep block sizes from 8 to
+128, and plot GFLOPS per block size to find the optimum for your machine (the
+sweep writes `build/tiling_sweep_<N>.csv` and `.svg`):
+
+```bash
+just tiling 1024 64
+just tiling-sweep 1024
+just tiling-perf 1024 32 128
+```
+
 Run `just` without arguments to list all available recipes. The default matrix
 size is `1024`, and the default number of `perf` repetitions is `5`.
 
