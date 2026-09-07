@@ -50,6 +50,10 @@ parse_positive_int(std::string_view argument, std::string_view what) {
 }
 
 // Usage: [matrix-size] [block-size | sweep]
+//   <prog>                  sweep all block sizes at the default matrix size
+//   <prog> 2048             sweep all block sizes at N=2048
+//   <prog> 2048 sweep       same as above
+//   <prog> 2048 64          single run with block size 64
 inline std::expected<TilingOptions, std::string>
 parse_tiling_options(int argc, char **argv) {
   if (argc > 3) {
@@ -67,21 +71,23 @@ parse_tiling_options(int argc, char **argv) {
     matrix_size = *parsed;
   }
 
-  if (argc <= 2) {
-    return TilingOptions{matrix_size, 0, true};
+  // The second argument selects the mode: absent or "sweep" sweeps all block
+  // sizes; anything else must be one fixed block size.
+  const bool wants_fixed_block =
+      argc == 3 && std::string_view{argv[2]} != "sweep";
+
+  if (!wants_fixed_block) {
+    return TilingOptions{
+        .matrix_size = matrix_size, .block_size = 0, .sweep = true};
   }
 
-  const std::string_view mode{argv[2]};
-  if (mode == "sweep") {
-    return TilingOptions{matrix_size, 0, true};
-  }
-
-  const auto block_size = parse_positive_int(mode, "Block size");
+  const auto block_size = parse_positive_int(argv[2], "Block size");
   if (!block_size) {
     return std::unexpected{block_size.error()};
   }
 
-  return TilingOptions{matrix_size, *block_size, false};
+  return TilingOptions{
+      .matrix_size = matrix_size, .block_size = *block_size, .sweep = false};
 }
 
 inline std::string read_small_file(const std::string &path) {
