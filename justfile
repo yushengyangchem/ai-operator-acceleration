@@ -1,6 +1,6 @@
 set shell := ["bash", "-cu"]
 
-loop_orders := "ijk ikj jik jki kij kji"
+gemm_orders := "ijk ikj jik jki kij kji"
 
 # List available recipes.
 default:
@@ -28,31 +28,27 @@ distclean:
 test: build
     ctest --test-dir build --output-on-failure
 
-# Run one loop order. Usage: just run ikj 1024
-run order="ijk" n="1024": build
-    ./build/bin/cpu_gemm_{{ order }} "{{ n }}"
+# Run one built benchmark binary.
+# Usage: just run cpu_gemm_ikj [n]; just run cpu_gemm_tiled [n] [block|sweep]
+run target n="1024" *args: build
+    ./build/bin/{{ target }} "{{ n }}" {{ args }}
 
-# Run all six loop orders. Usage: just benchmark 1024
-benchmark n="1024": build
+# Run all six loop orders. Usage: just benchmark-orders 1024
+benchmark-orders n="1024": build
     #!/usr/bin/env bash
     set -euo pipefail
 
-    for order in {{ loop_orders }}; do
+    for order in {{ gemm_orders }}; do
         echo
         echo "--- ${order^^} ---"
         "./build/bin/cpu_gemm_${order}" "{{ n }}"
     done
 
-# Compare cache behavior of IJK and IKJ. Usage: just perf 1024 5
-perf n="1024" repetitions="5": build
+# Profile cache behavior of one built benchmark binary with perf.
+# Usage: just perf cpu_gemm_ijk [n] [repetitions]; just perf cpu_gemm_tiled [n] [repetitions] [block]
+perf target n="1024" repetitions="5" *args: build
     perf stat -r "{{ repetitions }}" -e cache-references,cache-misses \
-        ./build/bin/cpu_gemm_ijk "{{ n }}"
-    perf stat -r "{{ repetitions }}" -e cache-references,cache-misses \
-        ./build/bin/cpu_gemm_ikj "{{ n }}"
-
-# Run the tiled GEMM with one block size. Usage: just tiling 1024 64
-tiling n="1024" block="64": build
-    ./build/bin/cpu_gemm_tiled "{{ n }}" "{{ block }}"
+        ./build/bin/{{ target }} "{{ n }}" {{ args }}
 
 # Sweep block sizes 8..128 and write the CSV result plus the SVG plot
 # into the build directory. Usage: just tiling-sweep 1024
@@ -72,10 +68,3 @@ tiling-sweep n="1024": build
 # Plot an existing sweep CSV. Usage: just tiling-plot build/tiling_sweep_1024.csv
 tiling-plot csv: build
     ./build/bin/cpu_tiling_plot "{{ csv }}" "{{ without_extension(csv) }}.svg"
-
-# Compare cache behavior of two block sizes. Usage: just tiling-perf 1024 32 128
-tiling-perf n="1024" small="32" large="128": build
-    perf stat -r 3 -e cache-references,cache-misses \
-        ./build/bin/cpu_gemm_tiled "{{ n }}" "{{ small }}"
-    perf stat -r 3 -e cache-references,cache-misses \
-        ./build/bin/cpu_gemm_tiled "{{ n }}" "{{ large }}"

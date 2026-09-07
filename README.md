@@ -32,33 +32,36 @@ Run the smoke tests:
 just test
 ```
 
-Run one implementation, optionally specifying the matrix size:
+Run one implementation, optionally specifying the matrix size (and block size
+or `sweep` for the tiled GEMM):
 
 ```bash
-just run ijk 1024
-just run ikj 1024
+just run cpu_gemm_ijk 1024
+just run cpu_gemm_ikj 1024
+just run cpu_gemm_tiled 1024 64
 ```
 
 Run all six loop orders:
 
 ```bash
-just benchmark 1024
+just benchmark-orders 1024
 ```
 
 Compare cache references and cache misses for the IJK and IKJ implementations:
 
 ```bash
-just perf 1024 5
+just perf cpu_gemm_ijk 1024 5
+just perf cpu_gemm_ikj 1024 5
 ```
 
-Run the blocked (tiled) GEMM with one block size, sweep block sizes from 8 to
-128, and plot GFLOPS per block size to find the optimum for your machine (the
-sweep writes `build/tiling_sweep_<N>.csv` and `.svg`):
+Sweep block sizes from 8 to 128 and plot GFLOPS per block size to find the
+optimum for your machine (the sweep writes `build/tiling_sweep_<N>.csv` and
+`.svg`), then compare cache behavior of two block sizes:
 
 ```bash
-just tiling 1024 64
 just tiling-sweep 1024
-just tiling-perf 1024 32 128
+just perf cpu_gemm_tiled 1024 5 32
+just perf cpu_gemm_tiled 1024 5 128
 ```
 
 Run `just` without arguments to list all available recipes. The default matrix
