@@ -7,8 +7,9 @@ A hands-on project for learning AI operator optimization from first principles.
 - A C++23-compatible compiler
 - CMake 3.16 or newer
 
-The included `shell.nix` provides the required development tools. Enter the
-environment with `nix-shell`, or use `direnv allow` when direnv is installed.
+The included `flake.nix` provides the required development tools. Enter the
+environment with `nix develop` (CPU only) or `nix develop .#cuda`, or use
+`direnv allow` when direnv is installed.
 
 ## Usage
 
