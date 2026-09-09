@@ -18,8 +18,10 @@
 inline constexpr int kDefaultMatrixSize = 1024;
 inline constexpr int kSweepRepetitions = 3;
 
-inline constexpr std::array<int, 8> kSweepBlockSizes{8,  16, 24, 32,
-                                                     48, 64, 96, 128};
+// Powers of two plus intermediate steps; if the best block lands on the
+// largest entry, the true optimum lies beyond the sweep range.
+inline constexpr std::array<int, 12> kSweepBlockSizes{
+    8, 16, 24, 32, 48, 64, 96, 128, 192, 256, 384, 512};
 
 using Matrix = std::vector<float>;
 

@@ -13,4 +13,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 
 include(CTest)
 
+option(GEMM_USE_AVX2 "Compile GEMM kernels with AVX2+FMA instructions" OFF)
+
 add_subdirectory(src)

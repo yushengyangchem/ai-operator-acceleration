@@ -11,6 +11,13 @@ configure:
     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
     ln -sfn build/compile_commands.json compile_commands.json
 
+# Like configure, but compile GEMM kernels with AVX2+FMA (cached in build/;
+# revert with: cmake -S . -B build -DGEMM_USE_AVX2=OFF). Explicit ISA flags
+# instead of -march=native because the Nix devshell strips native flags.
+configure-avx2:
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DGEMM_USE_AVX2=ON
+    ln -sfn build/compile_commands.json compile_commands.json
+
 # Configure and compile all GEMM implementations in Release mode.
 build: configure
     cmake --build build --parallel
@@ -50,7 +57,7 @@ perf target n="1024" repetitions="5" *args: build
     perf stat -r "{{ repetitions }}" -e cache-references,cache-misses \
         ./build/bin/{{ target }} "{{ n }}" {{ args }}
 
-# Sweep block sizes 8..128 and write the CSV result plus the SVG plot
+# Sweep block sizes 8..512 and write the CSV result plus the SVG plot
 # into the build directory. Usage: just tiling-sweep 1024
 tiling-sweep n="1024": build
     #!/usr/bin/env bash

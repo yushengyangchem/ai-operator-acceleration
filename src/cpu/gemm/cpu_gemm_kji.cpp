@@ -1,12 +1,20 @@
 #include "gemm_benchmark.hpp"
 
-void gemm_kji(const Matrix &A, const Matrix &B, Matrix &C, int N) {
-  for (int k = 0; k < N; ++k) {
-    for (int j = 0; j < N; ++j) {
-      float bkj = B[k * N + j];
+#include <cstddef>
 
-      for (int i = 0; i < N; ++i) {
-        C[i * N + j] += A[i * N + k] * bkj;
+// KJI: like JKI, the inner i loop strides N down columns of C and A -- one
+// cache line per element and nothing contiguous for the vectorizer. This
+// order stays slow regardless of how the kernel is written.
+void gemm_kji(const Matrix &A, const Matrix &B, Matrix &C, std::size_t N) {
+  const float *ap = A.data();
+  float *cp = C.data();
+
+  for (std::size_t k = 0; k < N; ++k) {
+    for (std::size_t j = 0; j < N; ++j) {
+      const float bkj = B[k * N + j];
+
+      for (std::size_t i = 0; i < N; ++i) {
+        cp[i * N + j] += ap[i * N + k] * bkj;
       }
     }
   }
