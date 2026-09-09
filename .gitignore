@@ -1,4 +1,5 @@
 build
+build-avx2
 compile_commands.json
 .cache/
 .direnv

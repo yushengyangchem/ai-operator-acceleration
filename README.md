@@ -70,11 +70,12 @@ size is `1024`, and the default number of `perf` repetitions is `5`.
 
 ## Vectorization notes
 
-All kernels are portable by default (baseline SSE2). To compile the GEMM
-kernels with AVX2+FMA on your machine:
+All kernels are portable by default (baseline SSE2, built into `build/`). The
+AVX2+FMA variants live in a separate tree (`build-avx2/`) so both can coexist:
 
 ```bash
-just configure-avx2 && just benchmark-orders 1024 && just tiling-sweep 1024
+just benchmark-orders-avx2 1024
+just tiling-sweep-avx2 1024
 ```
 
 Why this matters and what to watch out for:
