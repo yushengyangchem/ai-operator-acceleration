@@ -13,6 +13,7 @@
 #include <random>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <vector>
 
 inline constexpr int kDefaultMatrixSize = 1024;
@@ -37,18 +38,34 @@ struct CacheLevel {
   double bytes;
 };
 
-inline std::expected<int, std::string>
-parse_positive_int(std::string_view argument, std::string_view what) {
-  int value = 0;
-  const auto result = std::from_chars(argument.data(),
-                                      argument.data() + argument.size(), value);
+// from_chars has no value-returning overload, so its out-parameter is
+// confined to this helper; every caller sees a value-semantic expected.
+template <typename T>
+  requires std::is_arithmetic_v<T>
+std::expected<T, std::errc> parse_number(std::string_view text) {
+  T value{};
+  const auto result =
+      std::from_chars(text.data(), text.data() + text.size(), value);
 
-  if (result.ec != std::errc{} ||
-      result.ptr != argument.data() + argument.size() || value <= 0) {
-    return std::unexpected{std::format("{} must be a positive integer.", what)};
+  if (result.ec != std::errc{}) {
+    return std::unexpected{result.ec};
+  }
+  if (result.ptr != text.data() + text.size()) {
+    return std::unexpected{std::errc::invalid_argument};
   }
 
   return value;
+}
+
+inline std::expected<int, std::string>
+parse_positive_int(std::string_view argument, std::string_view what) {
+  const auto parsed = parse_number<int>(argument);
+
+  if (!parsed || *parsed <= 0) {
+    return std::unexpected{std::format("{} must be a positive integer.", what)};
+  }
+
+  return *parsed;
 }
 
 // Usage: [matrix-size] [block-size | sweep]
